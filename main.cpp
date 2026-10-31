@@ -1,6 +1,7 @@
 #include "toastwidget.h"
 
 #include <QApplication>
+#include <QClipboard>
 #include <QFont>
 #include <QGuiApplication>
 #include <QLabel>
@@ -35,10 +36,10 @@ int main(int argc, char *argv[])
     auto *heading = new QLabel(QString::fromUtf8("消息提示示例"), &window);
     heading->setObjectName(QStringLiteral("heading"));
     auto *description = new QLabel(
-        QString::fromUtf8("点击按钮，在桌面右下角显示“复制成功”"), &window);
-    auto *button = new QPushButton(QString::fromUtf8("显示提示"), &window);
+        QString::fromUtf8("点击复制 #2563EB，在桌面右下角显示操作反馈"), &window);
+    auto *button = new QPushButton(QString::fromUtf8("复制十六进制"), &window);
     button->setCursor(Qt::PointingHandCursor);
-    auto *hint = new QLabel(QString::fromUtf8("3 秒后自动消失 · 再次点击重新计时"), &window);
+    auto *hint = new QLabel(QString::fromUtf8("连续点击可叠加提示 · 每条提示 3 秒后自动消失"), &window);
 
     auto *layout = new QVBoxLayout(&window);
     layout->setContentsMargins(32, 28, 32, 28);
@@ -53,9 +54,10 @@ int main(int argc, char *argv[])
 
     auto *toast = new ToastWidget(&window);
     QObject::connect(button, &QPushButton::clicked, &window, [&window, toast]() {
+        QApplication::clipboard()->setText(QStringLiteral("#2563EB"));
         QScreen *screen = window.windowHandle()
             ? window.windowHandle()->screen() : QGuiApplication::primaryScreen();
-        toast->showMessage(QString::fromUtf8("复制成功"), 3000, screen);
+        toast->showMessage(QString::fromUtf8("已复制十六进制 #2563EB"), 3000, screen);
     });
 
     window.show();

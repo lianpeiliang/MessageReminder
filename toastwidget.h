@@ -2,12 +2,12 @@
 #define TOASTWIDGET_H
 
 #include <QWidget>
+#include <QList>
 
-class QLabel;
 class QScreen;
-class QTimer;
+class ToastPopup;
 
-// A reusable desktop notification. Repeated calls restart the countdown.
+// Each call adds an independently timed notification to the desktop stack.
 class ToastWidget : public QWidget
 {
 public:
@@ -15,12 +15,9 @@ public:
     void showMessage(const QString &message, int durationMs = 3000,
                      QScreen *screen = nullptr);
 
-protected:
-    void paintEvent(QPaintEvent *event) override;
-
 private:
-    QLabel *m_label;
-    QTimer *m_timer;
+    void arrangeMessages(QScreen *screen);
+    QList<ToastPopup *> m_messages;
 };
 
 #endif // TOASTWIDGET_H
