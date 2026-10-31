@@ -51,3 +51,19 @@ toast->showMessage(QString::fromUtf8("操作失败"), ToastWidget::Level::Error,
 队列当前保留所有等待消息，持续高频调用会导致等待时间增加。所属实例销毁时，显示中的提示和等待队列一同释放。
 
 使用 `QScreen::availableGeometry()` 定位、独立单次 `QTimer` 控制生命周期、`QPropertyAnimation` 平滑移动。
+
+双屏缩放不同时，提示窗会先绑定目标屏幕并处理首次原生窗口定位，再显示内容，避免先在主屏出现后跨屏移动。
+
+## 双屏回归验证
+
+在配置好 Qt 和编译器环境的 PowerShell 中运行：
+
+```powershell
+mkdir build/tests
+cd build/tests
+qmake ../../tests/tests.pro
+mingw32-make release
+./release/toastwidget_tests.exe
+```
+
+测试会短暂显示窗口，在各块实际屏幕及返回第一块屏幕时验证提示的屏幕归属、尺寸、坐标和间距。建议使用不同缩放比例的双屏运行。

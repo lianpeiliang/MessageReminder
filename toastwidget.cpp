@@ -8,6 +8,14 @@
 #include <QPropertyAnimation>
 #include <QScreen>
 #include <QTimer>
+#include <QWindow>
+
+namespace {
+constexpr int PopupWidth = 280;
+constexpr int PopupHeight = 84;
+constexpr int PopupMargin = 20;
+constexpr int PopupSpacing = 12;
+}
 
 class ToastPopup : public QWidget
 {
@@ -21,7 +29,7 @@ public:
         setAttribute(Qt::WA_TranslucentBackground);
         setAttribute(Qt::WA_ShowWithoutActivating);
         setFocusPolicy(Qt::NoFocus);
-        setFixedSize(280, 84);
+        setFixedSize(PopupWidth, PopupHeight);
 
         QString symbol = QStringLiteral("i");
         QString foreground = QStringLiteral("#93c5fd");
@@ -68,10 +76,21 @@ public:
 
         animation->setDuration(180);
         animation->setEasingCurve(QEasingCurve::OutCubic);
+
+        // Create the native window on the intended screen before moving/showing it.
+        // Otherwise Qt 5 may interpret the first position using the owner's DPI.
+        // Seed the geometry too: Windows chooses the native monitor at creation.
+        move(screen->availableGeometry().center() - rect().center());
+        winId();
+        windowHandle()->setScreen(screen);
+        // Native screen creation may have rescaled the cached QWidget size.
+        // Restore logical dimensions before calculating the stack positions.
+        setFixedSize(PopupWidth, PopupHeight);
     }
 
     void moveTo(const QPoint &position)
     {
+        targetPosition = position;
         animation->stop();
         if (!isVisible()) {
             move(position);
@@ -83,6 +102,7 @@ public:
     }
 
     QPointer<QScreen> targetScreen;
+    QPoint targetPosition;
 
 protected:
     void paintEvent(QPaintEvent *) override
@@ -140,7 +160,8 @@ void ToastWidget::processQueue()
             return;
 
         // Also respect physical screen height (84px popup, 12px gap, 20px margins).
-        const int screenCapacity = qMax(1, (screen->availableGeometry().height() - 40 + 12) / 96);
+        const int screenCapacity = qMax(1, (screen->availableGeometry().height()
+            - 2 * PopupMargin + PopupSpacing) / (PopupHeight + PopupSpacing));
         int screenCount = 0;
         for (ToastPopup *popup : m_messages)
             if (popup->targetScreen == screen)
@@ -158,7 +179,14 @@ void ToastWidget::displayMessage(const PendingMessage &message, QScreen *screen)
     auto *popup = new ToastPopup(message.text, message.level, screen, this);
     m_messages.append(popup);
     arrangeMessages(screen);
+    popup->setWindowOpacity(0.0);
     popup->show();
+    // Let the native DPI/geometry events settle before revealing the new popup.
+    QTimer::singleShot(0, popup, [popup]() {
+        popup->move(popup->targetPosition);
+        popup->windowHandle()->setGeometry(QRect(popup->targetPosition, popup->size()));
+        popup->setWindowOpacity(1.0);
+    });
     popup->raise();
 
     // Destroying the popup also cancels its timeout callback.
@@ -177,15 +205,17 @@ void ToastWidget::arrangeMessages(QScreen *screen)
 {
     // Oldest is closest to the taskbar; new messages appear above the stack.
     const QRect area = screen->availableGeometry();
-    const int margin = 20;
-    const int spacing = 12;
+    const int margin = PopupMargin;
+    const int spacing = PopupSpacing;
     int bottom = area.bottom() + 1 - margin;
     for (int i = 0; i < m_messages.size(); ++i) {
         ToastPopup *popup = m_messages.at(i);
         if (popup->targetScreen != screen)
             continue;
-        popup->moveTo(QPoint(qMax(area.left(), area.right() + 1 - popup->width() - margin),
-                             bottom - popup->height()));
-        bottom -= popup->height() + spacing;
+        // Use logical design dimensions; native DPI events can temporarily resize
+        // a newly created widget before its first show has settled.
+        popup->moveTo(QPoint(qMax(area.left(), area.right() + 1 - PopupWidth - margin),
+                             bottom - PopupHeight));
+        bottom -= PopupHeight + spacing;
     }
 }
