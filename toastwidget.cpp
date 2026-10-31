@@ -175,12 +175,12 @@ void ToastWidget::displayMessage(const PendingMessage &message, QScreen *screen)
 
 void ToastWidget::arrangeMessages(QScreen *screen)
 {
-    // Each screen has its own stack. Newest is closest to the taskbar.
+    // Oldest is closest to the taskbar; new messages appear above the stack.
     const QRect area = screen->availableGeometry();
     const int margin = 20;
     const int spacing = 12;
     int bottom = area.bottom() + 1 - margin;
-    for (int i = m_messages.size() - 1; i >= 0; --i) {
+    for (int i = 0; i < m_messages.size(); ++i) {
         ToastPopup *popup = m_messages.at(i);
         if (popup->targetScreen != screen)
             continue;

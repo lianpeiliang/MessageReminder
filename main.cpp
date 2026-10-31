@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     heading->setObjectName(QStringLiteral("heading"));
     auto *description = new QLabel(
         QString::fromUtf8("点击不同级别，观察右下角提示的颜色和叠放顺序"), &window);
-    auto *hint = new QLabel(QString::fromUtf8("超出数量按顺序排队 · 显示后计时 3 秒"), &window);
+    auto *hint = new QLabel(QString::fromUtf8("超出数量按顺序排队 · 显示后计时 4 秒"), &window);
 
     auto *layout = new QVBoxLayout(&window);
     layout->setContentsMargins(32, 28, 32, 28);
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
             QScreen *screen = window.windowHandle()
                 ? window.windowHandle()->screen() : QGuiApplication::primaryScreen();
             toast->showMessage(QString::fromUtf8("第 %1 次提示 · %2").arg(clickCount).arg(name),
-                               level, 3000, screen);
+                               level, 4000, screen);
         });
     }
     layout->addWidget(hint, 0, Qt::AlignHCenter);

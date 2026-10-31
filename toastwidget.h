@@ -18,9 +18,9 @@ public:
     explicit ToastWidget(QWidget *parent = nullptr);
     void setMaxVisibleMessages(int count);
     int maxVisibleMessages() const { return m_maxVisibleMessages; }
-    void showMessage(const QString &message, int durationMs = 3000,
+    void showMessage(const QString &message, int durationMs = 4000,
                      QScreen *screen = nullptr);
-    void showMessage(const QString &message, Level level, int durationMs = 3000,
+    void showMessage(const QString &message, Level level, int durationMs = 4000,
                      QScreen *screen = nullptr);
 
 private:
@@ -33,7 +33,7 @@ private:
     void processQueue();
     void displayMessage(const PendingMessage &message, QScreen *screen);
     void arrangeMessages(QScreen *screen);
-    int m_maxVisibleMessages = 3;
+    int m_maxVisibleMessages = 10;
     QQueue<PendingMessage> m_pendingMessages;
     QList<ToastPopup *> m_messages;
 };
