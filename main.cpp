@@ -1,7 +1,6 @@
 #include "toastwidget.h"
 
 #include <QApplication>
-#include <QClipboard>
 #include <QFont>
 #include <QGuiApplication>
 #include <QLabel>
@@ -36,8 +35,8 @@ int main(int argc, char *argv[])
     auto *heading = new QLabel(QString::fromUtf8("消息提示示例"), &window);
     heading->setObjectName(QStringLiteral("heading"));
     auto *description = new QLabel(
-        QString::fromUtf8("点击复制 #2563EB，在桌面右下角显示操作反馈"), &window);
-    auto *button = new QPushButton(QString::fromUtf8("复制十六进制"), &window);
+        QString::fromUtf8("连续点击，观察右下角提示的编号和叠放顺序"), &window);
+    auto *button = new QPushButton(QString::fromUtf8("显示提示（已点击 0 次）"), &window);
     button->setCursor(Qt::PointingHandCursor);
     auto *hint = new QLabel(QString::fromUtf8("连续点击可叠加提示 · 每条提示 3 秒后自动消失"), &window);
 
@@ -53,11 +52,13 @@ int main(int argc, char *argv[])
     layout->addStretch();
 
     auto *toast = new ToastWidget(&window);
-    QObject::connect(button, &QPushButton::clicked, &window, [&window, toast]() {
-        QApplication::clipboard()->setText(QStringLiteral("#2563EB"));
+    quint64 clickCount = 0;
+    QObject::connect(button, &QPushButton::clicked, &window, [&window, toast, button, &clickCount]() {
+        ++clickCount;
+        button->setText(QString::fromUtf8("显示提示（已点击 %1 次）").arg(clickCount));
         QScreen *screen = window.windowHandle()
             ? window.windowHandle()->screen() : QGuiApplication::primaryScreen();
-        toast->showMessage(QString::fromUtf8("已复制十六进制 #2563EB"), 3000, screen);
+        toast->showMessage(QString::fromUtf8("第 %1 次提示").arg(clickCount), 3000, screen);
     });
 
     window.show();
