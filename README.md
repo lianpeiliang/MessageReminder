@@ -4,7 +4,7 @@
 
 ### 软件功能演示
 
-![](https://github.com/user-attachments/assets/3cfba22c-1252-4bbc-b70f-38ee8b5d1a5b)
+https://github.com/user-attachments/assets/3cfba22c-1252-4bbc-b70f-38ee8b5d1a5b
 
 
 使用 **Qt Widgets（QWidget）+ qmake + C++11** 的桌面提示示例。
